@@ -1,0 +1,141 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "proto/txnotify.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/notifications": {
+      "get": {
+        "summary": "ListNotifications can be used to list all your current active notifications",
+        "operationId": "ListNotifications",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/ListNotificationsResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Notify"
+        ]
+      },
+      "post": {
+        "operationId": "CreateNotification",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/CreateNotificationResponse"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/Notification"
+            }
+          }
+        ],
+        "tags": [
+          "Notify"
+        ]
+      }
+    },
+    "/users": {
+      "post": {
+        "operationId": "CreateUser",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/CreateUserResponse"
+            }
+          }
+        },
+        "tags": [
+          "User"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "CreateNotificationResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "the id of your notification. Can be used to get more specific information about your subscription,\nor to delete it."
+        }
+      }
+    },
+    "CreateUserResponse": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "ListNotificationsResponse": {
+      "type": "object",
+      "properties": {
+        "notifications": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Notification"
+          }
+        }
+      }
+    },
+    "Notification": {
+      "type": "object",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "title": "the id of your user. Found in localstorage of the frontend"
+        },
+        "identifier": {
+          "type": "string",
+          "description": "The bitcoin blockchain id of the transaction you want to monitor or\nthe bitcoin blockchain address you want to monitor. You will be notified about all\nnew transactions sent to and from this address."
+        },
+        "confirmations": {
+          "type": "integer",
+          "format": "int64",
+          "description": "how many confirmations the transaction should have when you want to be notified. Can not be\nhigher than 6. If omitted, you will get a notification at 0 confirmations."
+        },
+        "email": {
+          "type": "string",
+          "title": "TODO: Add email validation using struct tags"
+        },
+        "description": {
+          "type": "string"
+        },
+        "slack_webhook_url": {
+          "type": "string"
+        },
+        "callback_url": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

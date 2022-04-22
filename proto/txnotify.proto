@@ -1,0 +1,64 @@
+syntax = "proto3";
+
+package rpc;
+
+// TODO: Add this patch thingy: import "patch/go.proto"; // https://github.com/alta/protopatch
+
+option go_package = "github.com/bjornoj/txnotify/rpc";
+
+service User {
+    rpc CreateUser (CreateUserRequest) returns (CreateUserResponse);
+}
+
+message CreateUserRequest {
+}
+
+message CreateUserResponse {
+    string id = 1;
+}
+
+service Notify {
+    // Use this endpoint to be notified every time a transaction is sent to a specific address
+    // or when a transaction is confirmed.
+    rpc CreateNotification (Notification) returns (CreateNotificationResponse);
+
+    // ListNotifications can be used to list all your current active notifications
+    rpc ListNotifications (ListNotificationsRequest) returns (ListNotificationsResponse);
+}
+
+message Notification {
+    // the id of your user. Found in localstorage of the frontend
+    string user_id = 1;
+
+    // The bitcoin blockchain id of the transaction you want to monitor or
+    // the bitcoin blockchain address you want to monitor. You will be notified about all
+    // new transactions sent to and from this address.
+    string identifier = 2;
+
+    // how many confirmations the transaction should have when you want to be notified. Can not be
+    // higher than 6. If omitted, you will get a notification at 0 confirmations.
+    uint32 confirmations = 3;
+
+    // TODO: Add email validation using struct tags
+    string email = 4;
+
+    string description = 5;
+
+    string slack_webhook_url = 6;
+
+    string callback_url = 7;
+}
+
+message CreateNotificationResponse {
+    // the id of your notification. Can be used to get more specific information about your subscription,
+    // or to delete it.
+    string id = 1;
+}
+
+message ListNotificationsRequest {
+    string user_id = 1;
+}
+
+message ListNotificationsResponse {
+    repeated Notification notifications = 1;
+}

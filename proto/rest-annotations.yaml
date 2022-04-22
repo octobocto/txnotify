@@ -1,0 +1,15 @@
+type: google.api.Service
+config_version: 3
+
+http:
+  rules:
+    # txnotify.proto
+    - selector: rpc.Notify.CreateNotification
+      post: "/notifications"
+      body: "*"
+
+    - selector: rpc.Notify.ListNotifications
+      get: "/notifications"
+
+    - selector: rpc.User.CreateUser
+      post: "/users"
