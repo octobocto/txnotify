@@ -15,3 +15,7 @@ docker/certbot/conf/archive/
 docker/certbot/conf/csr/
 docker/certbot/conf/keys/
 docker/certbot/conf/renewal/
+
+rootCA-key.pem
+rootCA.pem
+
