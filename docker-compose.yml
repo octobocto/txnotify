@@ -1,0 +1,111 @@
+version: "3.7"
+
+services:
+
+  docs:
+    image: slatedocs/slate
+    command:
+      - serve
+    volumes:
+      - ./index.html.md:/srv/slate/source/index.html.md
+    ports:
+      - 4567:4567
+
+  certbot:
+    image: alpine
+
+    #\e[5m  = blinking text
+    #\e[31m = red text
+    #\e[0m  = reset
+    command:
+      echo -e "\e[5m\e[31mIf you're seeing this you're doing something wrong, see the comments in service certbot in
+      docker-compose.yml \e[0m"
+
+  nginx:
+    build:
+      context: docker/nginx
+    environment:
+      SERVER_NAME: ${SERVER_NAME:-localhost}
+    volumes:
+      - ./docker/nginx/templates:/etc/nginx/templates
+      - ./docker/certbot/conf:/etc/letsencrypt
+      - ./docker/certbot/www:/var/www/certbot
+    depends_on:
+      - txnotify
+    ports:
+      - "443:443"
+      - "80:80"
+
+  txnotify:
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    depends_on:
+      - postgres
+
+    expose:
+      - 9002
+
+    ports:
+      - "9002:9002"
+
+    command:
+      - serve
+      - --network=${BITCOIN_NETWORK}
+      - --bitcoind.rpchost=bitcoind
+      - --bitcoind.zmqpubrawtx=12397
+      - --bitcoind.zmqpubrawblock=12398
+      - --bitcoind.rpcuser=user
+      - --bitcoind.rpcpassword=password
+      - --email-password=${EMAIL_PASSWORD}
+      - --db.port=5432
+      - --db.host=postgres
+
+  bitcoind:
+    image: ruimarinho/bitcoin-core:0.20
+    volumes:
+      - bitcoind-storage:/home/bitcoin/.bitcoin
+      - ./docker/bitcoind:/entry
+    entrypoint: /entry/bitcoind-entrypoint.sh
+    environment:
+      - BITCOIN_NETWORK
+    command:
+      - -zmqpubrawtx=tcp://0.0.0.0:12397
+      - -zmqpubrawblock=tcp://0.0.0.0:12398
+      - -rpcuser=user
+      - -rpcpassword=password
+      # rpcbind and rpcallowip on blank IP would be dangerous if we weren't running
+      # this in a container with it's own, contained network
+      - -rpcbind=0.0.0.0
+      - -rpcallowip=0.0.0.0/0
+      - -prune=550
+
+  postgres:
+    command:
+      - postgres
+      - -c
+      - log_destination=stderr
+      - -c
+      - log_min_messages=INFO
+      - -c
+      - log_error_verbosity=terse # don't log context
+    image: postgres:12.1-alpine
+    volumes:
+      - postgres-storage:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+    environment:
+      POSTGRES_USER: txnotify
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+      POSTGRES_DB: txnotify
+
+
+volumes:
+  txnotify-storage:
+    external: true
+  bitcoind-storage:
+    external: true
+  postgres-storage:
+    external: true
