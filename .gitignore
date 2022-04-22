@@ -1,0 +1,17 @@
+txnotify
+.idea/
+.env
+.envrc
+
+frontend/node_modules
+frontend/build
+frontend/.vscode
+node_modules
+frontend/.eslintcache
+
+docker/certbot/conf/live
+docker/certbot/conf/accounts/
+docker/certbot/conf/archive/
+docker/certbot/conf/csr/
+docker/certbot/conf/keys/
+docker/certbot/conf/renewal/
